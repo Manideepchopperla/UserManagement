@@ -1,0 +1,503 @@
+import React, { useState, useEffect, createContext, useContext } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BeatLoader } from "react-spinners";
+import "./App.css";
+
+const UserContext = createContext();
+
+const App = () => {
+  const [theme, setTheme] = useState("light");
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
+
+  return (
+    <Router>
+      <UserProvider>
+        <div>
+          <div className="toggle-btn">
+            <button onClick={toggleTheme} className="theme-toggle">
+            {theme === "light" ? "Dark" : "Light"} Mode 
+            </button>
+          </div>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/user/:id" element={<UserDetailPage />} />
+          </Routes>
+        </div>
+      </UserProvider>
+    </Router>
+  );
+};
+
+const UserProvider = ({ children }) => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("https://jsonplaceholder.typicode.com/users");
+        setUsers(response.data);
+      } catch (err) {
+        setError("Failed to fetch users.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  return (
+    <UserContext.Provider value={{ users, loading, error, setUsers }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+const HomePage = () => {
+  const { users, loading, error, setUsers } = useContext(UserContext);
+  const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 5;
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const handleSort = () => {
+    const sortedUsers = [...users].sort((a, b) => {
+      return sortOrder === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+    });
+    setUsers(sortedUsers);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+
+  const handleNext = () => {
+    if (currentPage < Math.ceil(users.length / usersPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const filteredUsers = currentUsers.filter((user) =>
+    user.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="container">
+      <h1>User List</h1>
+      <div className="search-cont">
+      <input
+        type="text"
+        placeholder="Search by name"
+        value={search}
+        onChange={handleSearch}
+        className="search-bar"
+      />
+      <button onClick={handleSort} className="sort-button">
+        Sort by Name ({sortOrder === "asc" ? "A-Z" : "Z-A"})
+      </button>
+      </div>
+
+      {loading ? (
+        <div className="main-loader-container"> 
+          <BeatLoader size={30} color="#4A90E2" loading={loading} /> 
+        </div>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <>
+          <ul className="user-list">
+            {filteredUsers.map((user) => (
+              <Link to={`/user/${user.id}`} className="user-link">
+                <li key={user.id} className="user-item">
+                  <p><strong>Name:</strong> {user.name}</p>
+                  <p><strong>Email:</strong> {user.email}</p>
+                  <p><strong>City:</strong> {user.address.city}</p>
+                </li>
+              </Link>
+            ))}
+          </ul>
+          <div className="pagination">
+            <button onClick={handlePrev} disabled={currentPage===1} className="prev" >
+              Previous
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentPage === Math.ceil(users.length / usersPerPage)}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const UserDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://jsonplaceholder.typicode.com/users/${id}`
+        );
+        setUser(response.data);
+      } catch (err) {
+        setError("Failed to fetch user details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [id]);
+
+  return (
+    <div className="container">
+      <button onClick={() => navigate(-1)} className="back-button">
+        Go Back
+      </button>
+
+      {loading ? (
+        <div className="main-loader-container"> 
+        <BeatLoader size={30} color="#4A90E2" loading={loading} /> 
+      </div> 
+      ) : error ? (
+        <p>{error}</p>
+      ) : user ? (
+        <div className="user-details">
+          <h1>{user.name}</h1>
+          <p><strong>User Id:</strong> {user.id}</p>
+          <p><strong>UserName:</strong> {user.username}</p>
+          <p><strong>Email:</strong> {user.email}</p>
+          <p><strong>Phone:</strong> {user.phone}</p>
+          <p><strong>Company:</strong> {user.company.name}</p>
+          <p><strong>Website:</strong> {user.website}</p>
+        </div>
+      ) : (
+        <p>No user details found.</p>
+      )}
+    </div>
+  );
+};
+
+export default App;
+
+
+:root {
+  --background-color-light: #f4f4f9;
+  --background-color-dark: #181C14;
+  --primary-color: Black;
+  --primary-text-color: white;
+  --secondary-color: #6c757d;
+  --text-color-light: #343a40;
+  --text-color-dark: #ffffff;
+  --button-color: #007bff;
+  --button-hover-color: #0056b3;
+  --border-color: #dcdcdc;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --bg-color:white;
+  --user-bg-color: #f9f9f9;
+  --user-text-color: black;
+}
+
+[data-theme="dark"] {
+  --background-color: var(--background-color-dark);
+  --text-color: var(--text-color-dark);
+  --primary-color: white;
+  --primary-text-color: Black;
+  --bg-color:   #313131;
+  --user-bg-color: #414141;
+  --user-text-color: white;
+  --border-color: #414141;
+  
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+}
+Link{
+  outline: none;
+  border: none;
+  text-decoration: none;
+}
+
+.search-cont{
+  display: flex;
+  
+}
+
+.toggle-btn{
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin: 2%;
+}
+
+.main-loader-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80vh;
+}
+
+.container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+h1 {
+  font-size: 2.5em;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.search-bar,
+.sort-button,
+.theme-toggle,
+.pagination button {
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sort-button{
+  width: 30%;
+  margin-left: 1%;
+}
+
+.search-bar {
+  background-color: #f7f7f7;
+  color: var(--text-color-light);
+}
+
+.sort-button {
+  background-color: var(--primary-color);
+  color: white;
+  cursor: pointer;
+}
+
+
+
+.search-bar{
+  
+}
+.sort-button,
+.theme-toggle,
+.pagination button{
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+}
+
+.theme-toggle {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 150px;
+  gap: 10px;
+}
+
+
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 20px;
+}
+
+.pagination button {
+  background-color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+  margin: 1%;
+}
+
+/* .pagination button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+*/
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+} 
+
+.user-list {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.user-item {
+  background-color: var(--user-bg-color);
+  margin-bottom: 10px;
+  padding: 15px;
+  color: var(--user-text-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: start;
+  box-shadow: 0 1px 4px var(--shadow-color);
+}
+
+/* .user-item:hover {
+  background-color: #eef1f6;
+} */
+
+.user-link {
+  text-decoration: none;
+  color: var(--text-color-light);
+  display: block;
+}
+
+.user-link:hover {
+  background-color: var(--primary-color);
+}
+
+.user-item p {
+  margin: 5px 0;
+}
+
+.user-details {
+  background-color: var(--user-bg-color);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.user-details h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: var(--user-text-color);
+}
+
+.user-details p {
+  font-size: 1.1em;
+  line-height: 1.5;
+  color: var(--user-text-color);
+}
+
+.back-button {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
+.theme-toggle i,
+.sort-button i {
+  font-size: 1.2em;
+}
+
+/* Icons */
+.theme-toggle i,
+.sort-button i {
+  margin-right: 10px;
+}
+
+/* Background image for homepage */
+body {
+  background-image: url('https://images.unsplash.com/photo-1521747116042-5e2a5f1231d8');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 768px) {
+  .container {
+    width: 90%;
+  }
+
+  .search-bar,
+  .sort-button,
+  .theme-toggle,
+  .pagination button {
+    width: 100%;
+  }
+  .search-bar{
+    width: 65%;
+  }
+  .sort-button{
+    width: 35%;
+    font-size: 13px;
+  }
+
+  .theme-toggle{
+    width: 20%;
+    margin-left: 2%;
+    font-size: 15px;
+  }
+
+  .pagination {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .user-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .theme-toggle {
+    flex-direction: column;
+  }
+}

@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# User Management App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A simple user management application built using React. This app allows users to view a list of users, search and sort them, and view detailed information about each user. It includes pagination for navigating large datasets and provides an intuitive UI for user interactions.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **User List**: Displays a paginated list of users with their name, email, and city.
+- **Search**: Search for users by name using a dynamic search bar.
+- **Sort**: Sort users in ascending or descending order by their name.
+- **Pagination**: Navigate through multiple pages of users, with a fixed number of users per page.
+- **User Detail View**: View detailed information about each user, including their name, email, address, and company.
+- **Error Handling**: Displays appropriate error messages in case of failed data fetching.
+- **Loading Indicator**: Shows a spinner while user data is being fetched.
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **React**: A JavaScript library for building dynamic user interfaces.
+- **React Router**: Enables navigation between the Home page and User Detail page.
+- **Context API**: Provides global state management for user data and loading/error states.
+- **Axios**: A promise-based HTTP client used for fetching user data from an API.
+- **React Spinners**: Provides a visually appealing loading spinner.
+- **CSS Modules**: Used for styling individual components and maintaining modular styles.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Setup Instructions
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Ensure you have Node.js and npm installed on your machine. You can download them from [Node.js Official Site](https://nodejs.org).
 
-### `npm run build`
+### Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone the repository**:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    ```bash
+    git clone https://github.com/Manideepchopperla/UserManagement.git
+    cd UserManagement
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Install dependencies**:
 
-### `npm run eject`
+    ```bash
+    npm install
+    ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. **Start the development server**:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    ```bash
+    npm start
+    ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. Open your browser and navigate to `http://localhost:3000` to view the app.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Project Structure
 
-## Learn More
+- **App.js**: The main component that manages the global state, routing, and user context.
+- **UserContext**: Context API for managing and providing global user data, loading states, and error handling.
+- **Home**: Displays the user list with features like search, sorting, and pagination.
+- **UserDetail**: Displays detailed information about a specific user based on their ID.
+- **API Integration**: Fetches data from an external API (e.g., JSONPlaceholder) for the user list.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## How it Works
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. **Data Fetching**: The app fetches a list of users from an external API (e.g., [JSONPlaceholder API](https://jsonplaceholder.typicode.com/users)) on load.
+2. **User List**: The **Home** component displays a list of users with pagination, search, and sort functionalities.
+3. **Detailed View**: Clicking on a user's name navigates to the **UserDetail** component, where detailed information about the selected user is displayed.
+4. **Pagination**: The list is divided into multiple pages with a fixed number of users displayed per page.
+5. **Loading and Error States**: A loading spinner is displayed while fetching data, and error messages appear if the data fetching fails.
 
-### Code Splitting
+## Key Components
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### 1. **Home**
+   - Handles the display of the user list.
+   - Includes features like search, sorting by name, and pagination.
+   - Links each user to their detailed view.
 
-### Analyzing the Bundle Size
+### 2. **UserDetail**
+   - Displays detailed information about a selected user.
+   - Includes fields like name, email, address, company, and more.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 3. **App**
+   - Manages global states like users, loading, and errors using the Context API.
+   - Sets up routes for navigating between the Home and UserDetail components.
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Enjoy using the **User Management App** to explore and manage user information seamlessly!
